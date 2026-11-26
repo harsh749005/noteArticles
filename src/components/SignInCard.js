@@ -2,38 +2,30 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseBrowser";
 
-// No passwords: we email a sign-in link.
+// One tap sign-in with Google. No emails, no codes.
 export default function SignInCard() {
-  const [email, setEmail] = useState("");
   const [statusText, setStatusText] = useState("");
 
-  async function sendSignInLink() {
-    setStatusText("Sending…");
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
+  async function signInWithGoogle() {
+    setStatusText("Opening Google…");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    setStatusText(
-      error
-        ? "Couldn’t send the link. Check the email and try again."
-        : "Check your inbox. Your sign-in link is on its way."
-    );
+    if (error) setStatusText("Couldn’t start Google sign-in. Try again.");
   }
 
   return (
     <div className="signin">
       <h1>Note<span>Articles</span></h1>
-      <p>Sign in with your email. No password needed.</p>
-      <div className="signin-box">
-        <input
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          onKeyDown={(event) => event.key === "Enter" && sendSignInLink()}
-        />
-        <button className="btn" onClick={sendSignInLink}>Send link</button>
-      </div>
+      <p>Sign in once and stay signed in.</p>
+      <button
+        className="btn"
+        style={{ marginTop: 18, padding: "14px 24px", fontSize: 16 }}
+        onClick={signInWithGoogle}
+      >
+        Continue with Google
+      </button>
       <p>{statusText}</p>
     </div>
   );
